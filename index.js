@@ -1,12 +1,15 @@
 const express = require('express');
 const app = express();
 const routes = require('./routes');
+const bodyParser = require('body-parser');
+const rateLimiter = require('./middlewares/rateLimiter');
 
-const bodyParser = require('body-parser')
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+app.use(rateLimiter);
 
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;

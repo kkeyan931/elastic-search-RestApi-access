@@ -21,12 +21,8 @@ router.use((req, res, next) => {
         method: req.method,
       },
     })
-    .then((res) => {
-      console.log("Logs indexed");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    .then((res) => {})
+    .catch((err) => {});
   next();
 });
 
@@ -157,56 +153,66 @@ router.get("/users", (req, res) => {
     });
 });
 
-// router.get("/kibana_sample_data_ecommerce", (req, res) => {
-//   let query = {
-//     index: "kibana_sample_data_ecommerce",
-//   };
-//   if (req.query.kibana_sample_data_ecommerce)
-//     query.q = `*${req.query.kibana_sample_data_ecommerce}*`;
-//   elasticClient
-//     .search(query)
-//     .then((resp) => {
-//       return res.status(200).json({
-//         kibana_sample_data_ecommerce: resp.hits.hits,
-//       });
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//       return res.status(500).json({
-//         msg: "Error",
-//         err,
-//       });
-//     });
-// });
-
-router.post("/kibana_sample_data_ecommerce", (req, res) => {
-  let offset = req.body.offset;
-  delete req.body.offset;
-
+router.get("/kibana_sample_data_ecommerce", (req, res) => {
+  let order_date = req.body.order_date;
   let elasticQuery = {
     index: "kibana_sample_data_ecommerce",
     query: {
       match: {
-        ...req.body,
+        order_date: order_date,
       },
     },
   };
 
-  console.log(elasticQuery);
+  elasticClient
+    .search(elasticQuery)
+    .then((resp) => {
+      return res.status(200).json({
+        kibana_sample_data_ecommerce: resp.hits.hits,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(500).json({
+        msg: "Error",
+        err,
+      });
+    });
+});
 
-  if (req.query.kibana_sample_data_ecommerce)
-    query.q = `*${req.query.kibana_sample_data_ecommerce}*`;
+router.post("/kibana_sample_data_ecommerce", (req, res) => {
+  let offset = req.body.offset;
+  let order_date = req.body.order_date;
+  let limit = req.body.limit;
+
+  if (order_date == undefined || offset == undefined || limit == undefined) {
+    res.status(400).json({
+      msg: "error",
+      type: "invalid input",
+    });
+    return;
+  }
+
+  let elasticQuery = {
+    index: "kibana_sample_data_ecommerce",
+    size: limit,
+    from: offset,
+    query: {
+      match: {
+        order_date: order_date,
+      },
+    },
+  };
+
   elasticClient
     .search(elasticQuery)
     .then((resp) => {
       let noOfOrders = Object.keys(resp.hits.hits).length;
-      let ordersResponse;
-      if(offset==undefined || offset>=noOfOrders){
-          ordersResponse = resp.hits.hits;
-      }
-      else{
-          ordersResponse = resp.hits.hits.slice(0,offset);
-      }
+
+      console.log("number of orders", noOfOrders);
+
+      let ordersResponse = resp.hits.hits;
+
       return res.status(200).json({
         kibana_sample_data_ecommerce: ordersResponse,
       });
