@@ -28,6 +28,7 @@ order_date - orders placed on the particular date
 By default 2 requests was given as the maximum request a user can send in a hour. This can be configured in the middlewares/rateLimiter.js by changing max to N.
 
 If request is exceeded for a particular user. the response will be
+
 <img width="523" alt="image" src="https://user-images.githubusercontent.com/65884897/163767934-d59a2374-c130-4119-8aad-9a30fb52c5e9.png">
 
 for rate limiting used the **express-rate-limit** https://github.com/nfriedly/express-rate-limit
